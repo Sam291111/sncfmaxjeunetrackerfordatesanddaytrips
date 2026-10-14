@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MAX Jeune Planner</title>
+<style>
+/* ===== Tokens ===== */
+:root{
+  --ink:#0F2438;--muted:#33475B;--soft:#57697B;--line:#D5DDE4;--line-strong:#8C9CAB;--ground:#EEF2F4;--surface:#fff;--field:#B7C3CE;
+  --teal:#0A6B5E;--teal-ink:#064E43;--teal-tint:#DDF1EC;--teal-wash:#E6F4F0;--teal-line:#A9D7CC;--navy:#14325A;
+  --amber-tint:#FCEBCB;--amber-line:#E8C27A;--amber-ink:#5C3200;--grey-tint:#E6EAEE;--grey-line:#C3CDD6;--grey-ink:#26394D;
+  --indigo-tint:#E3E5F8;--indigo-line:#B5BAEA;--indigo-ink:#2B2F7A;--danger:#9B2226;
+  --ring0:#0A6B5E;--ring1:#2F7F9E;--ring2:#6A63B8;--ring3:#A23B72;--ring4:#B45309;--ring5:#475569;
+  --font:"IBM Plex Sans",ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-family:var(--font);color:var(--ink);background:var(--ground);font-synthesis:none;font-variant-numeric:tabular-nums;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground)}
+h1,h2,h3,h4,p{margin:0}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.hidden{display:none!important}
+.hidden-view{display:none!important}
+.sr-only{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.hint{font-size:13.5px;color:var(--muted);line-height:1.5}
+
+/* ===== App header ===== */
+.app-header{background:var(--surface);border-bottom:1px solid var(--line)}
+.app-header-inner{max-width:1280px;margin:0 auto;padding:0 48px;min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:16px 32px;flex-wrap:wrap}
+.brand-lockup{display:flex;align-items:center;gap:10px}
+.brand-mark{width:32px;height:32px;border-radius:9px;background:var(--teal);display:grid;place-items:center}
+.brand-name{font-size:18px;font-weight:600;letter-spacing:-.01em}
+.header-left{display:flex;align-items:center;gap:16px 32px;flex-wrap:wrap}
+.mode-tabs{display:flex;gap:4px;background:#E3E9ED;padding:4px;border-radius:12px;max-width:100%}
+.mode-tab{height:40px;padding:0 18px;border:0;border-radius:9px;background:transparent;color:var(--muted);font-size:15px;font-weight:500;white-space:nowrap}
+.mode-tab.active{background:#fff;color:var(--teal-ink);font-weight:600;box-shadow:0 1px 3px #0F24381F}
+.header-actions{display:flex;gap:8px}
+.header-btn{height:44px;padding:0 14px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--field);border-radius:10px;font-size:14px;font-weight:500;position:relative}
+.header-btn svg{flex:none}
+.header-btn.is-custom::after{content:"";position:absolute;top:7px;right:7px;width:9px;height:9px;border-radius:50%;background:var(--ring4);border:2px solid #fff}
+
+/* ===== Layout ===== */
+.wrap{max-width:1280px;margin:0 auto;padding:32px 48px 64px}
+.view-head{margin-bottom:20px}
+.view-head h1{font-size:32px;line-height:1.15;font-weight:600;letter-spacing:-.02em}
+.view-head p{margin-top:6px;font-size:16px;color:var(--muted)}
+
+/* ===== Forms ===== */
+.search,.view-form{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;gap:12px 16px;align-items:flex-end;flex-wrap:wrap}
+.field{flex:1 1 180px;min-width:0}
+.field.grow{flex:1.4 1 240px}
+.field.narrow{flex:1 1 150px}
+.field>label,.field>.field-label,.group-label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.field input,.field select{width:100%;height:48px;padding:0 14px;border:1px solid var(--line-strong);border-radius:10px;background:#fff;font-weight:500;font-size:16px}
+.date-echo{display:block;margin-top:5px;font-size:13px;color:var(--muted)}
+.field-hint{display:block;color:var(--muted);font-size:13px;margin-top:6px;line-height:1.45}
+.btn{height:48px;padding:0 24px;border:0;border-radius:10px;font-size:16px;font-weight:600}
+.btn-primary{background:var(--teal);color:#fff}
+.btn-secondary{background:#fff;color:var(--ink);border:1px solid var(--line-strong);font-size:15px;padding:0 20px}
+.swap-btn{flex:none;width:48px;height:48px;border:1px solid var(--field);background:#fff;border-radius:10px;display:grid;place-items:center}
+.seg{display:flex;background:#E3E9ED;border-radius:10px;padding:4px;height:48px}
+.seg button{flex:1;border:0;background:transparent;border-radius:7px;font-size:15px;font-weight:500;color:var(--muted);padding:0 10px;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:#fff;color:var(--teal-ink);font-weight:600;box-shadow:0 1px 3px #0F24381F}
+.field{position:relative}
+.field select.sr-select{position:absolute!important;opacity:0;pointer-events:none;width:1px!important;height:1px!important;padding:0!important;border:0!important}
+
+/* Switches */
+.option-row{display:flex;gap:12px 32px;flex-wrap:wrap;margin:16px 0 8px}
+.switch{display:inline-flex;align-items:center;gap:12px;font-size:15px;font-weight:500;cursor:pointer}
+.switch input{appearance:none;-webkit-appearance:none;flex:none;width:52px;height:32px;border-radius:999px;background:var(--line-strong);position:relative;margin:0;cursor:pointer;transition:background .15s}
+.switch input::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch input:checked{background:var(--teal)}
+.switch input:checked::after{transform:translateX(20px)}
+.switch input:disabled{opacity:.5;cursor:not-allowed}
+.switch small{font-weight:400;color:var(--muted);font-size:14px}
+
+/* ===== Status / key ===== */
+.status{margin:12px 0 0;padding:12px 16px;background:#fff;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:14px;line-height:1.5}
+.status.warning{background:#FFF8E8;border-color:var(--amber-line);color:var(--amber-ink)}
+.status.error{background:#FDF0F0;border-color:#E7B4B6;color:var(--danger)}
+.result-key{display:flex;align-items:center;gap:8px 20px;flex-wrap:wrap;margin:12px 0 24px;padding:12px 16px;background:#fff;border:1px solid var(--line);border-radius:12px;font-size:14px;color:var(--muted)}
+.result-key .badges{margin-left:auto}
+
+/* ===== Badges ===== */
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid;white-space:nowrap}
+.badge-max{background:var(--teal-tint);border-color:var(--teal-line);color:var(--teal-ink)}
+.badge-ouigo{background:var(--amber-tint);border-color:var(--amber-line);color:var(--amber-ink)}
+.badge-paid{background:var(--grey-tint);border-color:var(--grey-line);color:var(--grey-ink)}
+.badge-night{background:var(--indigo-tint);border-color:var(--indigo-line);color:var(--indigo-ink)}
+.badge-closest{background:#fff;border-color:var(--line-strong);color:var(--ink)}
+
+/* ===== Plan results ===== */
+.cols{display:flex;gap:24px;align-items:flex-start}
+.col{flex:1 1 0;min-width:0}
+.col-head{position:sticky;top:0;z-index:2;background:var(--ground);padding:0 0 12px}
+.col-head h2{font-size:22px;font-weight:600;letter-spacing:-.01em}
+.col-head h2 span{font-size:15px;font-weight:500;color:var(--muted)}
+.col-head p{font-size:14px;color:var(--muted);margin-top:2px}
+.dir-tabs{display:none}
+.result-group{margin:20px 0 10px}
+.result-group:first-child{margin-top:0}
+.result-group h3{font-size:16px;font-weight:600}
+.result-group h3 span{font-weight:500;color:var(--muted)}
+.group-note{font-size:13.5px;color:var(--muted);margin-top:2px;line-height:1.45}
+.journey{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.journey-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.journey-times{font-size:28px;font-weight:600;letter-spacing:-.01em;line-height:1.1;white-space:nowrap}
+.journey-times small{font-size:13px;font-weight:600;color:var(--muted);margin-left:4px}
+.journey-dur{text-align:right;white-space:nowrap}
+.journey-dur strong{display:block;font-size:20px;font-weight:600}
+.journey-dur span{font-size:13.5px;color:var(--muted)}
+.journey-route{font-size:14px;color:var(--muted);margin-top:6px}
+.route-via{font-size:13px;color:var(--soft);margin-top:2px}
+.journey-badges{display:flex;gap:8px 10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.journey-meta{font-size:13.5px;color:var(--muted)}
+.journey details{margin-top:6px}
+.journey summary,.journey-direction summary{min-height:44px;display:flex;align-items:center;font-size:14px;font-weight:600;color:var(--teal-ink);cursor:pointer}
+.leg{padding:10px 0;border-bottom:1px solid #E3E9ED}
+.leg:last-child{border:0}
+.leg strong{font-size:14px;font-weight:600}
+.leg small{display:block;color:var(--muted);font-size:13px;margin-top:3px;line-height:1.45}
+.connection{display:block;padding:6px 10px;margin:4px 0;background:#F2F5F8;color:var(--muted);border-radius:6px;font-size:13px}
+.booking-handoff{display:flex;align-items:center;gap:4px 14px;flex-wrap:wrap;margin-top:6px}
+.sncf-search-link{display:inline-flex;align-items:center;min-height:36px;color:var(--teal-ink);font-size:13.5px;font-weight:600;text-decoration:underline}
+.copy-train-details{height:36px;padding:0 12px;background:#fff;color:var(--ink);border:1px solid var(--line-strong);border-radius:8px;font-size:13px;font-weight:600}
+.copy-train-details:hover{background:var(--ground)}
+.copy-train-details:disabled{opacity:.8;cursor:default}
+.fast-note{font-size:13.5px;color:var(--amber-ink);background:#FFF8E8;border:1px solid var(--amber-line);border-radius:10px;padding:10px 12px;margin:0 0 12px;line-height:1.45}
+.empty{background:#fff;border:1px dashed var(--line-strong);border-radius:12px;padding:18px;color:var(--muted);line-height:1.5;font-size:15px}
+.empty .btn{margin-top:12px;height:44px;font-size:15px}
+.fine-print{margin-top:32px;font-size:13.5px;color:var(--muted);max-width:760px;line-height:1.5}
+
+/* ===== Explore ===== */
+.filters{display:flex;align-items:center;gap:12px 28px;flex-wrap:wrap;margin:16px 0 8px}
+.filter-group{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.filter-group>span,.filter-group>.group-label{font-size:14px;color:var(--muted);margin:0}
+.filter-group>.group-label{font-weight:600}
+.limit-seg{display:flex;gap:6px}
+.limit-seg button{min-width:44px;height:44px;border:1px solid var(--field);background:#fff;border-radius:10px;font-size:15px;font-weight:500}
+.limit-seg button[aria-pressed="true"]{border:2px solid var(--teal);background:var(--teal-tint);color:var(--teal-ink);font-weight:600}
+.stepper{display:flex;align-items:center;border:1px solid var(--field);background:#fff;border-radius:10px;height:44px}
+.stepper button{width:44px;height:42px;border:0;background:transparent;font-size:20px}
+.stepper output{min-width:64px;text-align:center;font-size:15px;font-weight:600}
+.mini-check{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);min-height:44px;cursor:pointer}
+.mini-check input{width:18px;height:18px;accent-color:var(--teal)}
+.chip-toggle{display:inline-flex;align-items:center;gap:8px;min-height:44px;font-size:14px;color:var(--muted);cursor:pointer}
+.chip-toggle input{width:18px;height:18px;accent-color:var(--teal)}
+.view-status{color:var(--muted);font-size:14px;margin:8px 2px 20px;line-height:1.5}
+.view-status strong{color:var(--ink)}
+.explore-layout{display:flex;gap:24px;align-items:flex-start}
+.destination-panel{flex:0 1 400px;min-width:300px;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.destination-controls{padding:16px 16px 12px;border-bottom:1px solid var(--line)}
+.destination-controls h3{font-size:16px;font-weight:600;margin-bottom:10px}
+.sort-chips{display:flex;gap:6px;flex-wrap:wrap}
+.sort-chips button,.sort-more select{height:36px;padding:0 12px;border:1px solid var(--field);background:#fff;border-radius:999px;font-size:13.5px;font-weight:500}
+.sort-chips button[aria-pressed="true"]{border:2px solid var(--teal);background:var(--teal-tint);color:var(--teal-ink);font-weight:600}
+.sort-more{position:relative;display:inline-flex}
+.sort-more::after{content:"";position:absolute;right:13px;top:13px;width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);pointer-events:none}
+.sort-more select{appearance:none;-webkit-appearance:none;display:block;padding:0 32px 0 12px;max-width:150px;cursor:pointer}
+.destination-list{position:relative;max-height:min(776px,72vh);overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.destination-row{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;padding:12px;border:2px solid var(--line);background:#fff;border-radius:12px}
+.destination-row:hover{border-color:var(--teal-line)}
+.destination-row.selected{border-color:var(--teal);background:var(--teal-wash)}
+.row-body{flex:1;min-width:0}
+.row-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.row-top strong{font-size:16px;font-weight:600}
+.row-top span{font-size:17px;font-weight:600;white-space:nowrap}
+.row-line{display:block;font-size:13.5px;color:var(--muted);margin-top:2px}
+.row-line b{color:var(--teal-ink);font-weight:600}
+.row-metrics.eligibility-warning,.row-line.eligibility-warning{color:var(--amber-ink);font-weight:600}
+.ring{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#fff;border:3px solid var(--ring0);font-size:13px;font-weight:600;color:var(--ink)}
+.ring[data-changes="1"]{border-color:var(--ring1)}.ring[data-changes="2"]{border-color:var(--ring2)}.ring[data-changes="3"]{border-color:var(--ring3)}.ring[data-changes="4"]{border-color:var(--ring4)}.ring[data-changes="5"]{border-color:var(--ring5)}
+.explore-main{flex:1 1 560px;min-width:0;display:flex;flex-direction:column;gap:20px}
+.map-panel,.calendar-panel,.discovery-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}
+.map-title{margin:0 0 12px}
+.map-title h2{font-size:16px;font-weight:600}
+.map-body{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+.map-stage{position:relative;flex:1 1 360px;max-width:520px;aspect-ratio:660/650}
+.map-svg{display:block;width:100%;height:100%}
+.map-land{fill:#E4EEE9;stroke:#B3C6BD;stroke-width:2;stroke-linejoin:round}
+.map-marker{position:absolute;transform:translate(-50%,-50%);width:22px;height:22px;padding:0;border-radius:50%;background:#fff;border:2.5px solid var(--ring0);display:grid;place-items:center;font-size:11px;font-weight:600;color:var(--ink);z-index:1}
+.map-marker[data-changes="1"]{border-color:var(--ring1)}.map-marker[data-changes="2"]{border-color:var(--ring2)}.map-marker[data-changes="3"]{border-color:var(--ring3)}.map-marker[data-changes="4"]{border-color:var(--ring4)}.map-marker[data-changes="5"]{border-color:var(--ring5)}
+.map-marker:hover,.map-marker:focus-visible{z-index:4;width:28px;height:28px}
+.map-marker.selected{width:32px;height:32px;background:var(--ink);color:#fff;z-index:5;box-shadow:0 0 0 4px #0A6B5E40}
+.map-label{position:absolute;left:100%;top:50%;transform:translateY(-50%);margin-left:6px;white-space:nowrap;pointer-events:none;font-size:12px;font-weight:700;color:var(--ink);text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 5px #fff;display:none}
+.map-marker:hover .map-label,.map-marker:focus-visible .map-label,.map-marker.selected .map-label{display:block}
+.map-marker.label-left .map-label{left:auto;right:100%;margin:0 6px 0 0}
+.map-origin{position:absolute;transform:translate(-50%,-50%);width:20px;height:20px;border-radius:5px;background:var(--navy);border:3px solid #fff;box-shadow:0 0 0 2px var(--navy);z-index:3}
+.map-origin-label{position:absolute;transform:translate(-50%,-190%);font-size:12px;font-weight:600;color:var(--navy);white-space:nowrap;pointer-events:none;z-index:3;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 5px #fff}
+.map-legend{flex:1 1 200px;min-width:200px;display:flex;flex-direction:column;gap:14px}
+.map-legend h3{font-size:16px;font-weight:600}
+.legend-row{display:flex;align-items:center;gap:10px;font-size:14.5px}
+.legend-row .label{flex:1}
+.legend-row .count{font-weight:600}
+.legend-origin{width:20px;height:20px;border-radius:5px;background:var(--navy);border:3px solid #fff;box-shadow:0 0 0 2px var(--navy);margin:0 5px}
+.legend-note{padding-top:12px;border-top:1px solid var(--line);font-size:13.5px;line-height:1.5;color:var(--muted)}
+.map-empty{padding:24px 12px;color:var(--muted);text-align:center;line-height:1.5}
+.map-empty .quick{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.map-empty .quick button,.map-empty .btn{height:44px;padding:0 16px;border:1px solid var(--line-strong);background:#fff;border-radius:999px;font-size:14px;font-weight:600}
+.map-empty .btn-primary{background:var(--teal);color:#fff;border:0;border-radius:10px}
+
+/* Discovery detail */
+.discovery-card{padding:20px}
+.discovery-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px 16px;flex-wrap:wrap}
+.discovery-head h3{font-size:22px;font-weight:600;letter-spacing:-.01em}
+.discovery-head h3 span{font-size:15px;font-weight:500;color:var(--muted)}
+.stay-summary{font-size:15px;color:var(--muted)}
+.stay-summary strong{color:var(--teal-ink)}
+.eligibility-note{margin:12px 0 0;padding:10px 12px;background:#FFF8E8;border:1px solid var(--amber-line);border-radius:8px;color:var(--amber-ink);font-size:14px;line-height:1.45}
+.time-option-directions{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px}
+.journey-direction{flex:1 1 240px;min-width:0;border:1px solid var(--line);background:#F7F9FA;border-radius:12px;padding:16px}
+.direction-heading{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.direction-heading span{letter-spacing:0;font-weight:500;text-transform:none}
+.direction-times{margin-top:8px;font-size:30px;font-weight:600;letter-spacing:-.01em;line-height:1.1}
+.direction-times span{color:var(--soft);padding:0 3px;font-weight:500}
+.direction-stations{margin-top:2px;font-size:14px;color:var(--muted);overflow-wrap:anywhere}
+.direction-summary{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.journey-direction details{margin-top:6px;padding-top:2px;border-top:1px solid var(--line)}
+.discovery-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:20px}
+.discovery-actions .btn{height:48px}
+.more-times:disabled{opacity:.65;cursor:wait}
+.more-times-results{margin-top:16px}
+.more-times-results h4{font-size:16px;font-weight:600;margin:0 0 4px}
+.times-note{font-size:13.5px;color:var(--muted);margin:0 0 8px;line-height:1.45}
+.time-option{border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}
+.time-option-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px}
+.time-option-heading strong{font-size:15px}
+.time-option-heading span{font-size:13px;font-weight:600;color:var(--teal-ink);background:var(--teal-tint);padding:4px 10px;border-radius:999px}
+.caveat-line{margin-top:14px;font-size:13.5px;color:var(--muted)}
+
+/* ===== Dates ===== */
+.calendar-panel{margin-top:20px;padding:24px}
+.calendar-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.calendar-heading h2{font-size:22px;font-weight:600;letter-spacing:-.01em}
+.calendar-nav{display:flex;align-items:center;gap:8px}
+.calendar-nav button{width:44px;height:44px;border:1px solid var(--field);background:#fff;border-radius:10px;font-size:20px}
+.calendar-legend{display:flex;align-items:center;gap:6px 14px;flex-wrap:wrap;font-size:13.5px;color:var(--muted);margin-top:14px}
+.legend-item{display:inline-flex;align-items:center;gap:6px}
+.swatch{display:inline-block;width:16px;height:16px;border-radius:4px}
+.swatch.l0{background:#fff;border:2px dashed var(--line-strong)}.swatch.l1{background:#D7ECE7}.swatch.l2{background:#A9D7CC}.swatch.l3{background:#6FBFAE}.swatch.past{border:2px dashed var(--grey-line)}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-top:20px}
+.calendar-weekday{font-size:13px;font-weight:600;color:var(--muted);padding:0 4px}
+.calendar-day{height:92px;padding:10px 12px;border-radius:12px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;text-align:left;border:2px solid transparent;color:var(--ink)}
+.calendar-day .cd-day{font-size:14px;font-weight:600}
+.calendar-day .cd-count{display:flex;align-items:baseline;gap:5px}
+.calendar-day .cd-count b{font-size:30px;line-height:1;font-weight:600}
+.calendar-day .cd-count i{font-style:normal;font-size:12.5px;font-weight:500}
+.calendar-day.level-1{background:#D7ECE7;border-color:#D7ECE7}
+.calendar-day.level-2{background:#A9D7CC;border-color:#A9D7CC}
+.calendar-day.level-3{background:#6FBFAE;border-color:#6FBFAE}
+.calendar-day.no-max{background:#fff;border:2px dashed var(--line-strong);color:var(--muted)}
+.calendar-day.no-max .cd-count b{font-size:22px}
+.calendar-day.outside-window{background:transparent;border:2px dashed var(--grey-line);color:var(--soft)}
+.calendar-day:disabled{cursor:default;opacity:1}
+.calendar-day:not(:disabled):hover{border-color:var(--ink)}
+.calendar-note{margin-top:20px;font-size:13.5px;line-height:1.5;color:var(--muted);max-width:820px}
+.calendar-note a{color:var(--teal-ink);font-weight:600}
+
+/* ===== Dialogs ===== */
+dialog{border:0;border-radius:16px;padding:0;max-width:min(640px,calc(100vw - 32px));width:100%;color:var(--ink);box-shadow:0 20px 60px #0F243840}
+dialog::backdrop{background:#0F243866}
+.dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 24px 12px}
+.dialog-head h2{font-size:20px;font-weight:600}
+.dialog-close{width:44px;height:44px;border:0;background:transparent;font-size:24px;border-radius:10px}
+.dialog-body{padding:0 24px 24px;font-size:14.5px;line-height:1.55;color:var(--muted)}
+.dialog-body h3{font-size:15px;color:var(--ink);margin:16px 0 4px}
+.dialog-body ul{margin:6px 0;padding-left:20px}
+.dialog-body .field{display:block;margin-top:14px;font-size:13px;font-weight:600;color:var(--muted)}
+.dialog-body .field input,.dialog-body .field select{display:block;margin-top:6px}
+.provenance{margin-top:6px;padding:12px;background:var(--ground);border-radius:10px;font-size:13.5px;color:var(--ink)}
+
+/* ===== Responsive ===== */
+@media(max-width:1000px){
+  .explore-layout{flex-direction:column}
+  .destination-panel{order:2;flex:none;width:100%}
+  .explore-main{order:1;width:100%;flex:0 1 auto}
+  .destination-list{max-height:520px}
+}
+@media(max-width:800px){
+  .wrap{padding:20px 16px 48px}
+  .app-header-inner{padding:8px 16px 12px}
+  .header-left{width:100%}
+  .mode-tabs{width:100%}
+  .mode-tab{flex:1;padding:0 6px;font-size:13.5px;height:44px}
+  .view-head h1{font-size:28px}
+  .view-head p{font-size:15px}
+  .header-actions{position:absolute;top:8px;right:12px}
+  .app-header-inner{position:relative}
+  .header-btn span{display:none}
+  .header-btn{width:44px;padding:0;justify-content:center}
+  .search,.view-form{padding:16px}
+  .search .btn,.view-form .btn{width:100%;height:52px}
+  .field{flex:1 1 100%}
+  .field.narrow{flex:1 1 calc(50% - 8px)}
+  .swap-btn{align-self:center;margin-inline:auto}
+  .cols{display:block}
+  .dir-tabs{display:flex;background:#E3E9ED;border-radius:12px;padding:4px;margin:24px 0 16px;position:sticky;top:0;z-index:3}
+  .dir-tabs button{flex:1;height:48px;border:0;border-radius:9px;background:transparent;font-size:15px;font-weight:500;color:var(--muted)}
+  .dir-tabs button[aria-selected="true"]{background:#fff;color:var(--teal-ink);font-weight:600;box-shadow:0 1px 3px #0F24381F}
+  .col.is-inactive{display:none}
+  .col-head{position:static;padding-bottom:8px}
+  .result-key .badges{margin-left:0}
+  .journey-times{font-size:26px}
+  .calendar-panel{padding:16px}
+  .calendar-grid{gap:4px}
+  .calendar-weekday{font-size:12px;text-align:center;padding:0}
+  .calendar-day{height:60px;padding:6px 0;align-items:center;border-radius:10px}
+  .calendar-day .cd-count b{font-size:20px}
+  .calendar-day .cd-count i{display:none}
+  .calendar-day .cd-day{font-size:12px}
+  .calendar-day.no-max .cd-count b{font-size:18px}
+  .seg button{padding:0 4px;font-size:14px}
+  .limit-seg{width:100%}
+  .limit-seg button{flex:1;min-width:0}
+  .limit-filter{display:grid;grid-template-columns:max-content minmax(0,1fr);grid-template-rows:auto auto;align-items:center;gap:8px 10px;justify-content:normal}
+  .limit-filter #limitLabel{grid-column:1;grid-row:1}
+  .limit-filter #changeLimit{grid-column:1 / -1;grid-row:2;min-width:0}
+  .limit-filter .filter-unit{grid-column:2;grid-row:1}
+  .discovery-actions .btn{width:100%}
+  .filter-group{width:100%;justify-content:space-between}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media(max-width:360px){
+  .brand-name{font-size:16px}
+  .header-actions{right:8px;gap:6px}
+  .field.narrow{flex:1 1 100%}
+}
+
+</style>
+</head>
+<body>
+<header class="app-header">
+  <div class="app-header-inner">
+    <div class="header-left">
+      <div class="brand-lockup">
+        <div class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M8 3 6 21M16 3l2 18M7 9h10M6.5 15h11"/></svg></div>
+        <span class="brand-name">MAX Jeune Planner</span>
+      </div>
+      <nav class="mode-tabs" role="tablist" aria-label="Planner modes">
+        <button type="button" class="mode-tab active" id="tabPlan" data-view="planView" role="tab" aria-selected="true" aria-controls="planView">Plan a trip</button>
+        <button type="button" class="mode-tab" id="tabExplore" data-view="exploreView" role="tab" aria-selected="false" aria-controls="exploreView" tabindex="-1">Where can I go?</button>
+        <button type="button" class="mode-tab" id="tabDates" data-view="datesView" role="tab" aria-selected="false" aria-controls="datesView" tabindex="-1">Best dates</button>
+      </nav>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="header-btn" id="rulesButton" aria-haspopup="dialog" aria-label="Transfer rules"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg><span>Transfer rules</span></button>
+      <button type="button" class="header-btn" id="caveatsButton" aria-haspopup="dialog" aria-label="Data and caveats"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>Data &amp; caveats</span></button>
+    </div>
+  </div>
+</header>
+
+<dialog id="rulesDialog" aria-labelledby="rulesTitle">
+  <div class="dialog-head"><h2 id="rulesTitle">Transfer rules</h2><button type="button" class="dialog-close" data-close-dialog aria-label="Close">×</button></div>
+  <div class="dialog-body">
+    <p>These apply to Plan a trip and Where can I go?. Currently: <strong id="connectionSettingsSummary">SNCF station rules · no maximum wait</strong></p>
+    <label class="field" for="minConnectionMode">Minimum transfer time
+      <select id="minConnectionMode"><option value="sncf" selected>SNCF station and train rules (default)</option><option value="manual">Set one minimum for every connection</option><option value="none">Ignore minimum connection rules</option></select>
+    </label>
+    <label id="manualConnectionField" class="field hidden" for="minConnectionMinutes">Manual minimum (minutes)
+      <input id="minConnectionMinutes" type="number" min="0" max="240" step="1" value="30">
+    </label>
+    <label class="field" for="maxConnectionMinutes">Maximum wait between trains (minutes)
+      <input id="maxConnectionMinutes" type="number" min="1" max="10080" step="1" placeholder="No limit">
+    </label>
+    <label class="field" for="searchEffort">Route search effort
+      <select id="searchEffort"><option value="quick">Quick · 12k partial routes</option><option value="thorough" selected>Thorough · more routes</option><option value="uncapped">Uncapped (not recommended)</option></select>
+    </label>
+    <p class="field-hint">Quick uses a smaller search budget. Thorough uses a larger bounded budget, with extra room for day-trip searches. Uncapped removes expansion and partial-route caps and may take much longer or use substantial memory.</p>
+    <p id="connectionSettingsHint" class="field-hint">Uses SNCF’s station- and train-specific minimums, including transfers that are not permitted. If no rule is published for a station pair, the SNCF default is 5 minutes. Leave maximum wait blank to allow long or overnight connections.</p>
+  </div>
+</dialog>
+
+<dialog id="caveatsDialog" aria-labelledby="caveatsTitle">
+  <div class="dialog-head"><h2 id="caveatsTitle">Data &amp; caveats</h2><button type="button" class="dialog-close" data-close-dialog aria-label="Close">×</button></div>
+  <div class="dialog-body">
+    <p id="dataNote">Routes use SNCF’s published GTFS timetable and MAX availability snapshot. MAX availability comes from SNCF’s daily open-data snapshot, so a displayed seat may no longer be bookable. Paid fares are not checked.</p>
+    <h3>Good to know</h3>
+    <ul>
+      <li>“Lyon (all stations)” includes Part-Dieu, Perrache and Saint-Exupéry TGV; “Paris (all stations)” combines the main Paris terminals.</li>
+      <li>Paid rail connections are considered at your origin or destination; intermediate connections use MAX trains.</li>
+      <li>OUIGO Grande Vitesse trains are schedule candidates only. The public feed has no OUIGO seat counts.</li>
+      <li>Brussels is flagged by the feed but SNCF’s published €0 terms do not list Belgium. Confirm before relying on it.</li>
+    </ul>
+    <h3>Latest search</h3>
+    <p class="provenance" id="provenance">No search yet.</p>
+  </div>
+</dialog>
+
+<datalist id="stations"><option value="Paris (all stations)"></option><option value="Lyon (all stations)"></option></datalist>
+
+<main class="wrap">
+
+<section id="planView" class="mode-view" role="tabpanel" aria-labelledby="tabPlan">
+  <div class="view-head"><h1>Plan a trip</h1><p>Choose your stations and dates, with free MAX trains first.</p></div>
+  <form class="search" id="form">
+    <div class="field"><label for="origin">From</label><input id="origin" list="stations" placeholder="e.g. Lyon Part Dieu" autocomplete="off" required></div>
+    <button type="button" class="swap-btn" id="swapStations" aria-label="Swap origin and destination"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/></svg></button>
+    <div class="field"><label for="destination">To</label><input id="destination" list="stations" placeholder="e.g. Bordeaux Saint Jean" autocomplete="off" required></div>
+    <div class="field narrow"><label for="outbound">Outbound</label><input id="outbound" type="date" required><span class="date-echo" id="outboundEcho"></span></div>
+    <div class="field narrow"><label for="tripMode">Trip type</label><select id="tripMode"><option value="return" selected>Return</option><option value="oneway">One way</option></select></div>
+    <div class="field narrow" id="returnField"><label for="return">Return</label><input id="return" type="date" required><span class="date-echo" id="returnEcho"></span></div>
+    <button id="submit" class="btn btn-primary">Find trains</button>
+  </form>
+  <div class="option-row">
+    <label class="switch"><input id="includeTer" type="checkbox" role="switch" checked><span>Include paid rail and TER connections</span></label>
+    <label class="switch"><input id="includeOuigo" type="checkbox" role="switch" checked><span>Include possible OUIGO trains <small>· seats not verified</small></span></label>
+    <label class="switch hidden" id="closestOption"><input id="showClosest" type="checkbox" role="switch" checked><span>Show the closest reachable stops <small>· paid rail is off</small></span></label>
+  </div>
+  <div id="status" class="status">Enter your stations and travel dates to search.</div>
+  <div id="resultKey" class="result-key hidden"><span>MAX availability is a daily snapshot, so a shown seat may no longer be bookable.</span><span class="badges"><span class="badge badge-max">✓ MAX available</span><span class="badge badge-ouigo">? OUIGO, unverified</span><span class="badge badge-paid">€ Paid</span><span class="badge badge-night">☾ Night train</span></span></div>
+  <div class="dir-tabs hidden" id="dirTabs" role="tablist" aria-label="Direction"><button type="button" role="tab" id="dirOut" aria-selected="true" data-dir="out">Outbound</button><button type="button" role="tab" id="dirBack" aria-selected="false" data-dir="back">Return</button></div>
+  <div id="results" class="cols hidden">
+    <section class="col" id="colOut" aria-labelledby="outHeading"><div class="col-head"><h2 id="outHeading">Outbound</h2><p id="outRoute"></p></div><div id="outResults"></div></section>
+    <section class="col is-inactive" id="colBack" aria-labelledby="backHeading"><div class="col-head"><h2 id="backHeading">Return</h2><p id="backRoute"></p></div><div id="backResults"></div></section>
+  </div>
+  <p class="fine-print hidden" id="planFine">Fares for paid trains are not shown. Open “Data &amp; caveats” for how these results are built.</p>
+</section>
+
+<section id="exploreView" class="mode-view hidden-view" role="tabpanel" aria-labelledby="tabExplore">
+  <div class="view-head"><h1>Where can I go?</h1><p>Every station you can reach on free MAX trains from one start point.</p></div>
+  <form id="exploreForm" class="view-form">
+    <div class="field grow"><label for="exploreOrigin">Start station</label><input id="exploreOrigin" list="stations" placeholder="e.g. Lyon Part Dieu" autocomplete="off" required></div>
+    <div class="field"><label for="exploreDate">Date</label><input id="exploreDate" type="date" required><span class="date-echo" id="exploreDateEcho"></span></div>
+    <div id="exploreReturnField" class="field hidden"><label for="exploreReturnDate">Return date</label><input id="exploreReturnDate" type="date"><span class="date-echo" id="exploreReturnEcho"></span></div>
+    <div class="field grow"><div class="field-label" id="tripTypeLabel">Trip type</div>
+      <div class="seg" role="group" aria-labelledby="tripTypeLabel" id="tripTypeSeg"><button type="button" data-mode="oneway" aria-pressed="true">One way</button><button type="button" data-mode="daytrip" aria-pressed="false">Same day</button><button type="button" data-mode="return" aria-pressed="false">Return later</button></div>
+      <select id="exploreMode" class="sr-select" tabindex="-1" aria-hidden="true"><option value="oneway">One way</option><option value="daytrip">Return the same day</option><option value="return">Return on another day</option></select>
+    </div>
+    <button id="exploreSubmit" class="btn btn-primary">Explore</button>
+  </form>
+  <div class="filters">
+    <div class="filter-group limit-filter"><span class="group-label" id="limitLabel">Up to</span><div class="limit-seg" id="changeLimit" role="group" aria-labelledby="limitLabel"><button type="button" data-limit="0" aria-pressed="false">0</button><button type="button" data-limit="1" aria-pressed="false">1</button><button type="button" data-limit="2" aria-pressed="true">2</button><button type="button" data-limit="3" aria-pressed="false">3</button><button type="button" data-limit="4" aria-pressed="false">4</button><button type="button" data-limit="5" aria-pressed="false">5</button></div><span class="filter-unit">train changes</span></div>
+    <label class="mini-check" id="hideDirectLabel"><input type="checkbox" id="hideDirect"> Hide direct routes</label>
+    <div id="minimumStaySetting" class="filter-group hidden"><span class="group-label" id="stayLabel">Stay at least</span><div class="stepper" role="group" aria-labelledby="stayLabel"><button type="button" id="stayDown" aria-label="Decrease minimum stay">−</button><output id="stayOutput" aria-live="polite">3 h</output><button type="button" id="stayUp" aria-label="Increase minimum stay">+</button></div><span>at the destination</span><input type="hidden" id="minimumStayMinutes" value="180"></div>
+    <div id="exploreNowSetting" class="filter-group hidden"><label class="chip-toggle"><input id="exploreAfterNow" type="checkbox" checked> Only trains leaving after now</label><small id="exploreNowHint" class="field-hint"></small></div>
+  </div>
+  <div id="exploreStatus" class="view-status">Choose a start station and date to see where free MAX trains can take you.</div>
+  <div class="explore-layout">
+    <section class="destination-panel" aria-label="Destinations">
+      <div class="destination-controls"><h3 id="destinationHeading">Destinations</h3>
+        <div class="sort-chips" id="sortChips" role="group" aria-label="Sort destinations"><button type="button" data-sort="changes" aria-pressed="true">Fewest changes</button><button type="button" data-sort="duration" aria-pressed="false">Shortest trip</button><button type="button" data-sort="stay" aria-pressed="false">Longest stay</button><span class="sort-more"><label class="sr-only" for="destinationSort">More sort options</label><select id="destinationSort"><option value="" selected>More options…</option><option value="changes" hidden>Fewest changes</option><option value="duration" hidden>Shortest trip</option><option value="stay" hidden>Longest stay</option><option value="arrival">Earliest arrival</option><option value="nearest">Nearest</option><option value="farthest">Farthest</option><option value="latestReturn">Latest return</option></select></span></div>
+      </div>
+      <div id="destinationList" class="destination-list"><div class="map-empty">No search yet. Press Explore to list every station you can reach.</div></div>
+    </section>
+    <div class="explore-main">
+      <section class="map-panel" aria-label="Map of reachable destinations">
+        <div class="map-title"><h2 id="mapHeading">Reachable destinations</h2></div>
+        <div id="destinationMap" class="map-empty">The map appears after you press Explore.<div class="quick" id="quickStations"><button type="button" data-quick="Paris (all stations)">Paris (all stations)</button><button type="button" data-quick="Lyon (all stations)">Lyon (all stations)</button></div></div>
+      </section>
+      <div id="discoveryDetails" class="discovery-details"></div>
+    </div>
+  </div>
+</section>
+
+<section id="datesView" class="mode-view hidden-view" role="tabpanel" aria-labelledby="tabDates">
+  <div class="view-head"><h1>Best dates</h1><p>How many direct MAX trains run each day between two stations.</p></div>
+  <form id="calendarForm" class="view-form">
+    <div class="field"><label for="calendarOrigin">From</label><input id="calendarOrigin" list="stations" placeholder="e.g. Lyon Part Dieu" autocomplete="off" required></div>
+    <button type="button" class="swap-btn" id="swapCalendar" aria-label="Swap origin and destination"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/></svg></button>
+    <div class="field"><label for="calendarDestination">To</label><input id="calendarDestination" list="stations" placeholder="e.g. Marseille Saint Charles" autocomplete="off" required></div>
+    <div class="field narrow"><label for="calendarMonth">Month</label><input id="calendarMonth" type="month" required></div>
+    <button id="calendarSubmit" class="btn btn-primary">Compare dates</button>
+  </form>
+  <section class="calendar-panel" aria-label="Calendar">
+    <div class="calendar-heading"><h2 id="calendarHeading">MAX trains available by date</h2><div class="calendar-nav"><button type="button" id="monthBack" aria-label="Previous month">‹</button><button type="button" id="monthForward" aria-label="Next month">›</button></div></div>
+    <div class="calendar-legend"><span class="legend-item"><i class="swatch l0"></i>No MAX train</span><span class="legend-item"><i class="swatch l1"></i>1–2</span><span class="legend-item"><i class="swatch l2"></i>3–5</span><span class="legend-item"><i class="swatch l3"></i>6 or more</span><span class="legend-item"><i class="swatch past"></i>Past or not yet published</span></div>
+    <div id="calendarStatus" class="view-status">Pick two stations to see which days have a direct MAX train. Click a day to plan it.</div>
+    <div id="availabilityCalendar" class="calendar-grid"></div>
+    <div class="calendar-note">Counts are distinct direct trains marked MAX available in SNCF’s daily snapshot. Connecting journeys are not included, and seat numbers are not published. “Paris (all stations)” combines the main Paris terminals; “Lyon (all stations)” combines Part-Dieu, Perrache and Saint-Exupéry TGV. For live seats, <a href="https://www.maxjeune-tgvinoui.sncf/kombo/max-planner" target="_blank" rel="noreferrer">check the official MAX Planner ↗</a>.</div>
+  </section>
+</section>
+
+</main>
+
+<script>
+const $=id=>document.getElementById(id);const form=$('form');const now=new Date();const parisDateParts=d=>Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Paris',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d).map(part=>[part.type,part.value]));const iso=d=>{const p=parisDateParts(d);return `${p.year}-${p.month}-${p.day}`};const monthValue=d=>{const p=parisDateParts(d);return `${p.year}-${p.month}`};const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* ===== UI helpers added with the redesign ===== */
+let changeLimit=2;
+const hour23={timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit',hourCycle:'h23'};
+const plural=(n,one,many)=>`${n} ${n===1?one:many}`;
+const changesLabel=n=>n===0?'Direct':plural(n,'change','changes');
+const fmtDur=minutes=>{const m=Math.round(minutes);return `${Math.floor(m/60)}h ${String(m%60).padStart(2,'0')}`;};
+const longDate=value=>value?new Date(value+'T12:00:00Z').toLocaleDateString(undefined,{timeZone:'Europe/Paris',weekday:'long',day:'numeric',month:'long'}):'';
+const spanText=minutes=>Math.round(minutes)>=60?fmtDur(minutes):`${Math.round(minutes)} min`;
+function snapshotLabel(d){return d.availabilityDataUpdatedAt?`of ${new Date(d.availabilityDataUpdatedAt).toLocaleString(undefined,{timeZone:'Europe/Paris',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'})}`:`checked ${new Date(d.checkedAt||Date.now()).toLocaleTimeString(undefined,hour23)}`;}
+function setProvenance(d){const parts=[freshnessText(d),d.diagnostics?`${d.diagnostics.availableMaxRecords??0} MAX-available origin–destination records checked`:'',d.note].filter(Boolean).map(s=>String(s).trim().replace(/\.+$/,''));$('provenance').textContent=parts.length?parts.join('. ')+'.':'No details available.';}
+const shiftDate=(value,amount)=>{const [y,m,d]=value.split('-').map(Number),shifted=new Date(Date.UTC(y,m-1,d+amount));return `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth()+1).padStart(2,'0')}-${String(shifted.getUTCDate()).padStart(2,'0')}`;};
+$('outbound').value=iso(now);$('return').value=shiftDate(iso(now),1);$('exploreDate').value=iso(now);$('exploreReturnDate').value=shiftDate(iso(now),1);$('calendarMonth').value=monthValue(now);
+const todayIso=iso(now),maxAvailabilityDate=shiftDate(todayIso,29);
+function syncPlanDateLimits(){const outbound=$('outbound'),returnInput=$('return'),oneWay=$('tripMode').value==='oneway';outbound.min=todayIso;outbound.max=maxAvailabilityDate;if(outbound.value<todayIso)outbound.value=todayIso;if(outbound.value>maxAvailabilityDate)outbound.value=maxAvailabilityDate;const returnMax=shiftDate(outbound.value,28)<maxAvailabilityDate?shiftDate(outbound.value,28):maxAvailabilityDate;returnInput.min=outbound.value;returnInput.max=returnMax;returnInput.required=!oneWay;$('returnField').classList.toggle('hidden',oneWay);if(returnInput.value<outbound.value)returnInput.value=outbound.value;if(returnInput.value>returnMax)returnInput.value=returnMax;}
+function syncExploreDateLimit(){const input=$('exploreDate'),max=$('exploreMode').value==='return'?shiftDate(maxAvailabilityDate,-1):maxAvailabilityDate;input.min=todayIso;input.max=max;if(input.value<todayIso)input.value=todayIso;if(input.value>max)input.value=max;}
+function syncExploreNowFilter(){const isToday=$('exploreDate').value===iso(new Date()),checkbox=$('exploreAfterNow');checkbox.disabled=!isToday;$('exploreNowSetting').classList.toggle('hidden',!isToday);$('exploreNowHint').textContent=isToday?(checkbox.checked?`Leaving after ${new Date().toLocaleTimeString(undefined,hour23)}.`:'All of today’s departures are included.'):'';}
+function syncExploreReturnField(){syncExploreDateLimit();const outbound=$('exploreDate').value||todayIso,min=shiftDate(outbound,1),candidateMax=shiftDate(outbound,28),max=candidateMax<maxAvailabilityDate?candidateMax:maxAvailabilityDate,field=$('exploreReturnField'),input=$('exploreReturnDate'),enabled=$('exploreMode').value==='return',daytrip=$('exploreMode').value==='daytrip';input.min=min;input.max=max;if(!input.value||input.value<min)input.value=min;if(input.value>max)input.value=max;input.required=enabled;field.classList.toggle('hidden',!enabled);$('exploreForm').classList.toggle('with-return',enabled);$('minimumStaySetting').classList.toggle('hidden',!daytrip);syncExploreNowFilter();}
+function syncConnectionControls(){const mode=$('minConnectionMode').value,manual=mode==='manual',none=mode==='none',maximum=$('maxConnectionMinutes').value;$('manualConnectionField').classList.toggle('hidden',!manual);$('connectionSettingsHint').textContent=none?'SNCF minimum times and forbidden-transfer flags are ignored. Zero-minute or otherwise impossible changes may appear. Set a maximum wait separately if you want to limit the time between trains.':manual?'Uses your selected minimum for positive connection times. SNCF-forbidden transfers are also blocked when transfer data is available. Leave maximum wait blank to allow long or overnight connections.':'Uses SNCF’s station- and train-specific minimums, including transfers that are not permitted. If no rule is published for a station pair, the SNCF default is 5 minutes. Leave maximum wait blank to allow long or overnight connections.';$('rulesButton').classList.toggle('is-custom',none||manual||Boolean(maximum));$('connectionSettingsSummary').textContent=`${none?'No minimum':manual?'Manual minimum':'SNCF station rules'} · ${maximum?`max wait ${maximum} min`:'no maximum wait'}`;}
+const connectionQuery=()=>({minConnectionMode:$('minConnectionMode').value,minConnectionMinutes:$('minConnectionMinutes').value,maxConnectionMinutes:$('maxConnectionMinutes').value});
+try{const savedEffort=localStorage.getItem('routeSearchEffort'),effort=savedEffort==='balanced'?'quick':savedEffort==='extensive'?'thorough':savedEffort;if(['quick','thorough','uncapped'].includes(effort))$('searchEffort').value=effort;}catch{}
+const routeSearchQuery=()=>({searchEffort:$('searchEffort').value});
+const freshnessText=data=>{const items=[],connectionMode=data.connectionSettings?.mode||data.settings?.minConnectionMode;if(data.availabilityDataUpdatedAt)items.push(`SNCF availability snapshot updated ${new Date(data.availabilityDataUpdatedAt).toLocaleString(undefined,{timeZone:'Europe/Paris'})}`);if(data.availabilityDataRetrievedAt)items.push(`loaded by this app ${new Date(data.availabilityDataRetrievedAt).toLocaleString(undefined,{timeZone:'Europe/Paris'})}`);if(connectionMode!=='none'&&data.connectionRulesLoaded&&data.connectionRulesRetrievedAt)items.push(`SNCF transfer rules loaded ${new Date(data.connectionRulesRetrievedAt).toLocaleString(undefined,{timeZone:'Europe/Paris'})}`);else if(connectionMode!=='none'&&data.connectionRulesLoaded===false)items.push('station transfer rules unavailable; five-minute fallback used');if(data.checkedAt)items.push(`search completed ${new Date(data.checkedAt).toLocaleTimeString(undefined,{timeZone:'Europe/Paris'})}`);return items.join(' · ');};
+const searchCoverageNote=diagnostics=>{if(!diagnostics)return'';if(diagnostics.truncated){const reasons=diagnostics.truncationReasons||[],limits=diagnostics.limits||{},fmt=value=>Number(value||0).toLocaleString(),caps=[];if(reasons.includes('expansion limit'))caps.push(`${fmt(diagnostics.expanded)}/${fmt(limits.expanded)} connection checks`);if(reasons.includes('return expansion limit')){const incomplete=Number(diagnostics.returnExpansionIncompleteDestinations)||0,exhausted=Number(diagnostics.returnBudgetExhaustedDestinations)||0,detail=[incomplete?`${fmt(incomplete)} destination return checks remain incomplete`:'',exhausted?`${fmt(exhausted)} destinations had no remaining shared return budget`: ''].filter(Boolean).join('; ');caps.push(`${fmt(diagnostics.returnExpanded)}/${fmt(limits.returnExpanded)} total return checks${detail?`; ${detail}`:''}`);}if(reasons.includes('frontier limit'))caps.push(`${fmt(diagnostics.frontierPeak)}/${fmt(limits.frontier)} partial routes (${fmt(diagnostics.frontierCandidatesPeak)} candidates)`);if(reasons.includes('return frontier limit'))caps.push(`${fmt(diagnostics.returnFrontierPeak)}/${fmt(limits.returnFrontier)} return partial routes (${fmt(diagnostics.returnFrontierCandidatesPeak)} candidates)`);const reason=reasons.filter(item=>!['expansion limit','return expansion limit','frontier limit','return frontier limit'].includes(item)).join(', ');return `Search reached ${[...caps,reason].filter(Boolean).join(' and ')||'a safety limit'}; results may be incomplete.`;}if(diagnostics.resultsLimited)return `Showing ${diagnostics.resultLimit} of ${diagnostics.resultCount} feasible departures.`;return'';};
+syncPlanDateLimits();syncExploreReturnField();syncConnectionControls();$('minConnectionMode').addEventListener('change',()=>{syncConnectionControls();if(exploreHasSearched)$('exploreForm').requestSubmit();});$('searchEffort').addEventListener('change',()=>{try{localStorage.setItem('routeSearchEffort',$('searchEffort').value);}catch{}if(exploreHasSearched)$('exploreForm').requestSubmit();});for(const id of ['minConnectionMinutes','minimumStayMinutes'])$(id).addEventListener('change',()=>{if(exploreHasSearched)$('exploreForm').requestSubmit();});$('maxConnectionMinutes').addEventListener('change',()=>{syncConnectionControls();if(exploreHasSearched)$('exploreForm').requestSubmit();});$('outbound').addEventListener('change',syncPlanDateLimits);$('tripMode').addEventListener('change',syncPlanDateLimits);$('exploreMode').addEventListener('change',()=>{syncExploreReturnField();if(exploreHasSearched)$('exploreForm').requestSubmit();});$('exploreDate').addEventListener('change',syncExploreReturnField);$('exploreAfterNow').addEventListener('change',()=>{syncExploreNowFilter();if(exploreHasSearched)$('exploreForm').requestSubmit();});
+fetch('/api/health').then(r=>r.json()).then(d=>{if(d.sample)$('status').textContent='Sample mode: demonstration itineraries only.'}).catch(()=>{});fetch('/api/stations').then(r=>r.json()).then(data=>{for(const s of data.stations||[]){const o=document.createElement('option');o.value=s;$('stations').append(o)}}).catch(()=>{});
+const fmt=d=>new Date(d).toLocaleString(undefined,{timeZone:'Europe/Paris',weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});const shortTime=d=>new Date(d).toLocaleTimeString(undefined,{timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});const dayOffset=(d,base)=>Math.max(0,Math.round((Date.parse(`${iso(new Date(d))}T00:00:00Z`)-Date.parse(`${iso(new Date(base))}T00:00:00Z`))/86400000));const displayTime=(d,base)=>`${shortTime(d)}${dayOffset(d,base)?` +${dayOffset(d,base)}d`:''}`;const waitMinutes=(previous,next)=>Math.max(0,Math.round((new Date(next.from)-new Date(previous.to))/60000));const formatWait=minutes=>minutes>=60?`${Math.floor(minutes/60)}h ${minutes%60}m`:`${minutes} min`;
+const exactDateTime=d=>new Date(d).toLocaleString(undefined,{timeZone:'Europe/Paris',weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+const trainlineStationIds=new Map([['lyon part dieu','urn:trainline:generic:loc:4676'],['paris gare de lyon','urn:trainline:generic:loc:4924']]);
+const stationKey=value=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+const trainlineSearch=leg=>{const origin=trainlineStationIds.get(stationKey(leg.origin)),destination=trainlineStationIds.get(stationKey(leg.destination));if(!origin||!destination)return{url:'https://www.thetrainline.com/fr',title:'Trainline station IDs for this leg are not mapped yet. Use Copy leg details to enter the route, date and train manually.'};const date=new Date(leg.from),time=`${iso(date)}T${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}:00`,params=new URLSearchParams({journeySearchType:'single',origin,destination,outwardDate:time,outwardDateType:'departAfter',selectedTab:'train',splitSave:'true',lang:'fr','transportModes[]':'mixed'});return{url:`https://www.thetrainline.com/book/results?${params.toString()}`,title:'Opens a prefilled Trainline route and date search, not a selected train. Add MAX JEUNE in passenger options and verify the exact train and fare.'};};
+const bookingHandoff=(leg,trainName)=>{const copyText=[leg.origin+' → '+leg.destination,'Date: '+iso(new Date(leg.from)),'Departure: '+exactDateTime(leg.from),'Arrival: '+exactDateTime(leg.to),trainName?'Train: '+trainName:null].filter(Boolean).join(String.fromCharCode(10)),trainline=trainlineSearch(leg);return '<div class="booking-handoff"><a class="sncf-search-link" href="https://www.sncf-connect.com/home/search/od" title="SNCF Connect opens its search form; it has no stable public link to the selected train. Use the copied details to find this leg." target="_blank" rel="noopener noreferrer">Open SNCF Connect search ↗</a><a class="sncf-search-link" href="'+esc(trainline.url)+'" title="'+esc(trainline.title)+'" target="_blank" rel="noopener noreferrer">Search on Trainline ↗</a><button type="button" class="copy-train-details" data-copy-train-details="'+esc(copyText)+'" aria-label="Copy leg details">Copy leg details</button></div>';};
+function badgesFor(j,group){
+ const out=[],single=j.legs.length===1,brussels=j.legs.some(l=>/brussels|bruxelles/i.test(`${l.origin} ${l.destination}`));
+ if(group==='night')out.push(['night','☾ Night train']);
+ if(group==='closest')out.push(['closest','Closest stop']);
+ if(j.maxLegs)out.push(['max',single?'✓ MAX available':`✓ ${plural(j.maxLegs,'MAX leg','MAX legs')}`]);
+ if(brussels&&j.maxLegs)out.push(['ouigo','? Brussels eligibility unconfirmed']);
+ if(j.ouigoLegs)out.push(['ouigo',single?'? OUIGO, unverified':`? ${j.ouigoLegs} OUIGO unverified`]);
+ if(j.paidLegs)out.push(['paid',single?'€ Paid':`€ ${j.paidLegs} paid`]);
+ return out;
+}
+function render(data,target){
+ const el=$(target),maxFirst=data?.maxFirst||[],nightTrains=data?.nightTrains||[],ouigoCandidates=data?.ouigoCandidates||[],fastest=data?.fastest,closest=data?.closest||[];
+ if(!maxFirst.length&&!nightTrains.length&&!ouigoCandidates.length&&!fastest&&!closest.length){el.innerHTML='<div class="empty">No matching train itinerary found for these dates.<br>Try another date or station, or use Best dates to find a day with direct MAX trains.<div><button type="button" class="btn btn-primary" data-goto-dates>Find a better date</button></div></div>';return}
+ const detailTime=d=>new Date(d).toLocaleString(undefined,{timeZone:'Europe/Paris',weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+ const heading=(title,count,note)=>`<div class="result-group"><h3>${title}${count==null?'':` <span>· ${count}</span>`}</h3>${note?`<p class="group-note">${note}</p>`:''}</div>`;
+ const card=(j,group)=>{
+  const brusselsUnconfirmed=j.legs.some(l=>/brussels|bruxelles/i.test(`${l.origin} ${l.destination}`));
+  const transfers=j.legs.slice(1).flatMap((leg,i)=>{const prev=j.legs[i],sameTrip=String(prev.tripId||prev.id||prev.train)===String(leg.tripId||leg.id||leg.train);return sameTrip?[]:[`${prev.destination} (${formatWait(waitMinutes(prev,leg))} wait)`];});
+  const trainLabel=l=>(l.trainAlternates?.length?l.trainAlternates:[l.train]).filter(Boolean).join(' / ');
+  const badges=badgesFor(j,group).map(([kind,text])=>`<span class="badge badge-${kind}">${esc(text)}</span>`).join('')||'<span class="journey-meta">No MAX availability data</span>';
+  const days=dayOffset(j.arrival,j.departure);
+  return `<article class="journey"><div class="journey-head"><div class="journey-times">${shortTime(j.departure)} → ${shortTime(j.arrival)}${days?`<small>+${days}d</small>`:''}</div><div class="journey-dur"><strong>${j.closest?`${esc(j.distanceKm)} km`:fmtDur(j.duration)}</strong><span>${j.closest?'from destination':changesLabel(j.changes)}</span></div></div><div class="journey-route">${esc(j.legs[0].origin)} → ${esc(j.legs.at(-1).destination)}</div>${transfers.length?`<div class="route-via">via ${transfers.map(esc).join(' · ')}</div>`:''}<div class="journey-badges">${badges}</div>${j.sameTrainReboard?'<p class="times-note">This train service appears in separate sections; availability is shown per section. Confirm the booking details before relying on this route.</p>':''}<details><summary>Show train details</summary>${j.legs.map((l,i)=>`${i?(()=>{const prev=j.legs[i-1],gap=waitMinutes(prev,l),sameTrip=String(prev.tripId||prev.id||prev.train)===String(l.tripId||l.id||l.train),overnight=iso(new Date(l.from))!==iso(new Date(prev.to));return sameTrip?'<small class="connection">Continue on the same train service; availability is shown per section</small>':`<small class="connection">${overnight?'Overnight connection':'Change'} at ${esc(prev.destination)} · ${formatWait(gap)} wait</small>`})():''}<div class="leg"><strong>${detailTime(l.from)} · ${esc(l.origin)} → ${detailTime(l.to)} · ${esc(l.destination)}</strong><small>${trainLabel(l)?`Train ${esc(trainLabel(l))} · `:''}${esc(l.type)} · ${l.maxAvailable?(brusselsUnconfirmed?'Feed marks MAX availability; Brussels eligibility unconfirmed':'MAX feed marks OUI (daily snapshot)'):l.maxEligibilityUnknown?'Timetable only · MAX seat availability not published':'Paid timetable; fare not checked'}</small>${bookingHandoff(l,trainLabel(l))}</div>`).join('')}</details></article>`};
+ const same=(a,b)=>a.legs.map(l=>l.id).join('|')===b.legs.map(l=>l.id).join('|'),listed=[...maxFirst,...nightTrains,...ouigoCandidates],alreadyListed=fastest&&listed.some(j=>same(j,fastest));
+ el.innerHTML=`${maxFirst.length?heading('Free with MAX',maxFirst.length,'Built from trains the daily MAX snapshot marks available. Each card flags any paid or unverified legs.')+maxFirst.map(j=>card(j,'max')).join(''):''}${nightTrains.length?heading('Intercités de nuit',nightTrains.length,'')+'<p class="fast-note">Overnight Intercités flagged available by the daily MAX feed. They may arrive the following morning; confirm the reservation and accommodation type with SNCF.</p>'+nightTrains.map(j=>card(j,'night')).join(''):''}${ouigoCandidates.length?heading('Possible OUIGO',ouigoCandidates.length,'')+'<p class="fast-note">Scheduled OUIGO Grande Vitesse trains. SNCF’s public MAX feed has no OUIGO seat counts, so confirm MAX eligibility and a free reservation with SNCF.</p>'+ouigoCandidates.map(j=>card(j,'ouigo')).join(''):''}${!maxFirst.length&&!nightTrains.length&&!ouigoCandidates.length?'<div class="empty">No itinerary with MAX availability or OUIGO candidate data found.</div>':''}${fastest?heading('Fastest overall',null,'May include paid trains. Fares are not checked.')+(alreadyListed?'<p class="group-note">The fastest option is already listed above.</p>':card(fastest,'fastest')):''}${closest.length?heading('Closest reachable without paid trains',closest.length,'')+'<p class="fast-note">These routes stop short of your destination. OUIGO legs are schedule candidates only, with MAX seat availability unverified. Distance is approximate, based on station coordinates.</p>'+closest.map(j=>card(j,'closest')).join(''):''}`;
+}
+document.addEventListener('click',async event=>{const button=event.target.closest('[data-copy-train-details]');if(!button)return;const label=button.textContent;try{await navigator.clipboard.writeText(button.dataset.copyTrainDetails||'');button.textContent='Copied';}catch{button.textContent='Copy unavailable';}button.disabled=true;setTimeout(()=>{button.textContent=label;button.disabled=false;},1800);});
+function switchView(id){for(const section of document.querySelectorAll('.mode-view'))section.classList.toggle('hidden-view',section.id!==id);for(const tab of document.querySelectorAll('.mode-tab')){const active=tab.dataset.view===id;tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;}syncEchoes();if(id==='exploreView'&&!$('exploreOrigin').value)$('exploreOrigin').value=$('origin').value;if(id==='datesView'){if(!$('calendarOrigin').value)$('calendarOrigin').value=$('origin').value;if(!$('calendarDestination').value)$('calendarDestination').value=$('destination').value;}}
+document.querySelectorAll('.mode-tab').forEach(button=>button.addEventListener('click',()=>switchView(button.dataset.view)));
+let activeMainSearch=null,mainSearchGeneration=0;form.addEventListener('submit',async e=>{e.preventDefault();activeMainSearch?.abort();const controller=new AbortController(),generation=++mainSearchGeneration;activeMainSearch=controller;const btn=$('submit'),oneWay=$('tripMode').value==='oneway';btn.disabled=true;btn.textContent='Searching…';$('results').classList.add('hidden');$('dirTabs').classList.add('hidden');$('status').className='status';$('status').textContent='Loading the SNCF timetable and checking MAX availability…';try{const p=new URLSearchParams({origin:$('origin').value,destination:$('destination').value,outbound:$('outbound').value,mode:oneWay?'oneway':'return',return:oneWay?'':$('return').value,includeTer:String($('includeTer').checked),includeClosest:String($('showClosest').checked),includeOuigo:String($('includeOuigo').checked),...connectionQuery(),...routeSearchQuery()});const r=await fetch('/api/search?'+p,{signal:controller.signal});const d=await r.json();if(generation!==mainSearchGeneration)return;if(!r.ok)throw Error(d.error||'Search failed');render(d.outbound,'outResults');render(d.returning,'backResults');
+$('outRoute').textContent=`${$('origin').value} → ${$('destination').value}`;$('backRoute').textContent=`${$('destination').value} → ${$('origin').value}`;
+$('outHeading').innerHTML=`Outbound <span>· ${esc(shortDate($('outbound').value+'T12:00:00Z'))}</span>`;$('backHeading').innerHTML=`Return <span>· ${esc(shortDate($('return').value+'T12:00:00Z'))}</span>`;
+$('dirOut').textContent=`Outbound · ${$('outResults').querySelectorAll('.journey').length}`;$('dirBack').textContent=`Return · ${$('backResults').querySelectorAll('.journey').length}`;syncDirTabs('out');
+$('results').classList.toggle('one-way',oneWay);$('results').classList.remove('hidden');$('resultKey').classList.remove('hidden');$('planFine').classList.remove('hidden');
+const diagnostics=Object.values(d.routeSearchDiagnostics||{}).flatMap(item=>item?.outbound?Object.values(item):[item]),routeWarnings=[...new Set(diagnostics.filter(item=>item?.truncated).map(searchCoverageNote))],warnings=[d.dayTripWarning,d.eligibilityWarning,...routeWarnings.map(message=>`${message} Try a narrower date range or station selection.`)].filter(Boolean);$('status').className=warnings.length?'status warning':'status';$('status').textContent=warnings.length?`${warnings.join(' ')} `+`${plural(d.diagnostics?.availableMaxRecords??0,'MAX-available record','MAX-available records')} checked · MAX snapshot ${snapshotLabel(d)}.`:`${plural(d.diagnostics?.availableMaxRecords??0,'MAX-available record','MAX-available records')} checked · MAX snapshot ${snapshotLabel(d)}.`;$('colBack').classList.toggle('hidden',oneWay);$('dirBack').classList.toggle('hidden',oneWay);$('dirTabs').classList.toggle('hidden',oneWay);setProvenance(d)}catch(err){if(err.name!=='AbortError'&&generation===mainSearchGeneration){$('status').className='status error';$('status').textContent=err.message}}finally{if(generation===mainSearchGeneration){activeMainSearch=null;btn.disabled=false;btn.textContent='Find trains'}}});
+function shortDate(d){return new Date(d).toLocaleDateString(undefined,{timeZone:'Europe/Paris',weekday:'short',day:'numeric',month:'short'});}
+function renderExploreJourney(journey,label){
+ const minutes=journey.duration,trainName=leg=>(leg.trainAlternates?.length?leg.trainAlternates:[leg.train]).join(' / ');
+ const details=journey.legs.map((leg,index)=>`${index?(String(journey.legs[index-1].tripId||journey.legs[index-1].id||journey.legs[index-1].train)===String(leg.tripId||leg.id||leg.train)?'<small class="connection">Continue on the same train service; MAX availability is shown for each section</small>':`<small class="connection">Change at ${esc(journey.legs[index-1].destination)} · ${formatWait(waitMinutes(journey.legs[index-1],leg))} connection</small>`):''}<div class="leg"><strong>${displayTime(leg.from,journey.departure)} · ${esc(leg.origin)} → ${displayTime(leg.to,journey.departure)} · ${esc(leg.destination)}</strong><small>Train ${esc(trainName(leg))} · MAX feed marks OUI (daily snapshot)</small>${bookingHandoff(leg,trainName(leg))}</div>`).join('');
+ return `<section class="journey-direction ${label==='Outbound'?'outbound-direction':'return-direction'}"><div class="direction-heading"><strong>${label}</strong><span>${shortDate(journey.departure)}</span></div><div class="direction-times">${displayTime(journey.departure,journey.departure)} <span>→</span> ${displayTime(journey.arrival,journey.departure)}</div><div class="direction-stations">${esc(journey.legs[0].origin)} → ${esc(journey.legs.at(-1).destination)}</div><div class="direction-summary"><span class="badge badge-max">✓ MAX available</span><span>${spanText(minutes)} · ${changesLabel(journey.changes)}</span></div>${journey.sameTrainReboard?'<p class="times-note">A train service appears in multiple legs; availability is shown per section. Confirm the booking details before relying on this route.</p>':''}<details><summary>Train details (${plural(journey.legs.length,'train','trains')})</summary>${details}</details></section>`;
+}
+function renderExploreOption(option,index){const stay=option.returning?Math.max(0,Math.round((new Date(option.returning.departure)-new Date(option.outbound.arrival))/60000)):null;return `<article class="time-option"><div class="time-option-heading"><strong>Option ${index+1}</strong>${stay===null?'':`<span>${formatWait(stay)} at destination</span>`}</div><div class="time-option-directions">${renderExploreJourney(option.outbound,'Outbound')}${option.returning?renderExploreJourney(option.returning,'Return'):''}</div></article>`;}
+const MAP_VIEW={w:660,h:650,lonMin:-5.4,latMax:51.4,pad:20,sy:60};MAP_VIEW.sx=MAP_VIEW.sy*0.688;
+const mapX=lon=>MAP_VIEW.pad+(lon-MAP_VIEW.lonMin)*MAP_VIEW.sx,mapY=lat=>MAP_VIEW.pad+(MAP_VIEW.latMax-lat)*MAP_VIEW.sy;
+const mapPct=(lon,lat)=>({x:Math.min(99,Math.max(1,mapX(lon)/MAP_VIEW.w*100)),y:Math.min(99,Math.max(1,mapY(lat)/MAP_VIEW.h*100))});
+const FRANCE_OUTLINE=[[2.4,51.05],[1.85,50.95],[1.55,50.2],[0.1,49.5],[-0.9,49.35],[-1.25,49.7],[-1.9,49.7],[-1.5,48.65],[-2.7,48.65],[-3.5,48.85],[-4.5,48.7],[-4.8,48.4],[-4.7,48.0],[-3.4,47.7],[-2.2,47.2],[-2.1,46.5],[-1.2,46.15],[-1.1,45.6],[-1.25,44.6],[-1.55,43.5],[-0.7,43.0],[0.7,42.8],[1.7,42.5],[3.15,42.45],[3.0,43.1],[3.7,43.4],[4.5,43.4],[5.4,43.25],[6.0,43.1],[6.7,43.2],[7.0,43.55],[7.5,43.78],[7.0,44.2],[6.9,45.1],[7.1,45.9],[6.1,46.2],[6.6,46.5],[6.9,47.4],[7.6,47.6],[7.6,48.9],[8.2,49.0],[6.4,49.5],[5.8,49.55],[4.85,50.1],[4.2,50.3],[3.2,50.75]];
+const CORSICA_OUTLINE=[[9.2,41.4],[9.4,41.7],[9.5,42.8],[9.2,43.0],[8.6,42.6],[8.55,41.9]];
+const outlinePath=points=>'M'+points.map(([lon,lat])=>`${mapX(lon).toFixed(1)} ${mapY(lat).toFixed(1)}`).join(' L')+' Z';
+const MAP_BASE_SVG=`<svg class="map-svg" viewBox="0 0 ${MAP_VIEW.w} ${MAP_VIEW.h}" role="img" aria-label="Outline map of France"><path class="map-land" d="${outlinePath(FRANCE_OUTLINE)}"/><path class="map-land" d="${outlinePath(CORSICA_OUTLINE)}"/></svg>`;
+function drawMap(data){
+ const distanceKm=d=>{if(!data.originPoint)return null;const rad=x=>x*Math.PI/180,lat1=rad(data.originPoint.lat),lat2=rad(d.lat),dLat=lat2-lat1,dLon=rad(d.lon-data.originPoint.lon),a=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;return 6371*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));};
+ const stayMinutes=d=>d.returning?Math.max(0,Math.round((new Date(d.returning.departure)-new Date(d.outbound.arrival))/60000)):null,eligibilityUnknown=d=>/bruxelles|brussels/i.test(d.name);
+ const total=data.destinations.length,levels=[...data.changes].sort((a,b)=>a-b);
+ /* Map: outline + real buttons as markers (keyboard and touch friendly) + legend with counts */
+ const markers=data.destinations.map(d=>{const p=mapPct(d.lon,d.lat);return `<button type="button" class="map-marker${p.x>70?' label-left':''}" data-key="${esc(d.key)}" data-changes="${d.changes}" style="left:${p.x.toFixed(2)}%;top:${p.y.toFixed(2)}%" aria-label="${esc(d.name)}, ${changesLabel(d.changes)}${eligibilityUnknown(d)?', MAX eligibility unconfirmed':''}">${d.changes}<span class="map-label">${esc(d.name)}</span></button>`}).join('');
+ const origin=data.originPoint?(()=>{const p=mapPct(data.originPoint.lon,data.originPoint.lat);return `<span class="map-origin" style="left:${p.x.toFixed(2)}%;top:${p.y.toFixed(2)}%" aria-hidden="true"></span><span class="map-origin-label" style="left:${p.x.toFixed(2)}%;top:${p.y.toFixed(2)}%">Start: ${esc(data.origin)}</span>`})():'';
+ const legendRows=levels.map(n=>`<div class="legend-row"><span class="ring" data-changes="${n}">${n}</span><span class="label">${changesLabel(n)}</span><span class="count">${data.destinations.filter(d=>d.changes===n).length}</span></div>`).join('');
+ $('destinationMap').className='';
+ $('destinationMap').innerHTML=`<div class="map-body"><div class="map-stage">${MAP_BASE_SVG}${origin}${markers}</div><div class="map-legend"><h3>Changes needed</h3>${legendRows}<div class="legend-row"><span class="legend-origin" aria-hidden="true"></span><span class="label">Start station</span></div><p class="legend-note">Numbers on the map are train changes. Each station shows its fewest selected changes.${Math.max(...levels)<5?' Raise “Up to” to include more.':''}</p></div></div>`;
+ $('destinationHeading').textContent=plural(total,'reachable destination','reachable destinations');
+ const sortControl=$('destinationSort'),stayOption=sortControl.querySelector('[value="stay"]'),latestReturnOption=sortControl.querySelector('[value="latestReturn"]'),distanceOptions=['nearest','farthest'].map(value=>sortControl.querySelector(`[value="${value}"]`));
+ const hasReturn=data.destinations.some(d=>d.returning);
+ if(stayOption)stayOption.disabled=!hasReturn;latestReturnOption.disabled=!hasReturn;distanceOptions.forEach(option=>option.disabled=!data.originPoint);
+ document.querySelector('#sortChips [data-sort="stay"]').disabled=!hasReturn;
+ if((['stay','latestReturn'].includes(sortControl.value)&&sortControl.selectedOptions[0]?.disabled)||(['nearest','farthest'].includes(sortControl.value)&&!data.originPoint))sortControl.value='changes';
+ let selectedKey=null;
+ const sortedDestinations=()=>{const destinations=[...data.destinations],time=d=>new Date(d).getTime(),distance=d=>distanceKm(d)??Infinity,stay=d=>stayMinutes(d)??-1;switch(sortControl.value){case'duration':destinations.sort((a,b)=>(time(a.outbound.arrival)-time(a.outbound.departure))-(time(b.outbound.arrival)-time(b.outbound.departure)));break;case'arrival':destinations.sort((a,b)=>time(a.outbound.arrival)-time(b.outbound.arrival));break;case'nearest':destinations.sort((a,b)=>distance(a)-distance(b));break;case'farthest':destinations.sort((a,b)=>distance(b)-distance(a));break;case'stay':destinations.sort((a,b)=>stay(b)-stay(a));break;case'latestReturn':destinations.sort((a,b)=>time(b.returning?.departure||0)-time(a.returning?.departure||0));break;default:destinations.sort((a,b)=>a.changes-b.changes||time(a.outbound.arrival)-time(b.outbound.arrival));}return destinations;};
+ const emptyMessage=()=>{const base=data.mode==='daytrip'?'No destination has a MAX-only route there and back on this date.':data.mode==='return'?`No destination has a MAX-only route on ${shortDate(data.date)} and back on ${shortDate(data.returnDate)}.`:'No stations are reachable with these settings on this date.';const raise=Math.max(...levels)<5?`<div><button type="button" class="btn btn-primary" data-raise-limit>Allow up to ${Math.max(...levels)+1} changes</button></div>`:'<div>Try another date, or a different start station.</div>';return `<div class="map-empty">${base}${raise}</div>`;};
+ const renderDestinationList=()=>{
+  const destinations=sortedDestinations();
+  $('destinationList').innerHTML=destinations.length?destinations.map(d=>{
+   const km=distanceKm(d),there=stayMinutes(d),uncertain=eligibilityUnknown(d),outMinutes=Math.round((new Date(d.outbound.arrival)-new Date(d.outbound.departure))/60000);
+   const back=d.returning?`<span class="row-line"><span>Back ${data.mode==='return'?`${esc(shortDate(d.returning.departure))} · `:''}${shortTime(d.returning.departure)}</span> · <b>${spanText(there)} there</b></span>`:'';
+   return `<button type="button" class="destination-row${selectedKey===d.key?' selected':''}" data-key="${esc(d.key)}"><span class="ring" data-changes="${d.changes}">${d.changes}</span><span class="row-body"><span class="row-top"><strong>${esc(d.name)}</strong><span>${spanText(outMinutes)}</span></span><span class="row-line">${displayTime(d.outbound.departure,d.outbound.departure)} → ${displayTime(d.outbound.arrival,d.outbound.departure)} · ${changesLabel(d.changes)}</span>${back}${km===null?'':`<span class="row-line">~${Math.round(km)} km straight-line</span>`}${uncertain?'<span class="row-line eligibility-warning">Belgium MAX €0 eligibility unconfirmed</span>':''}</span></button>`}).join(''):emptyMessage();
+  return destinations;};
+ renderDestinationList();sortControl.onchange=()=>{renderDestinationList();syncSortChips();};syncSortChips();
+ const select=(key,fromList)=>{
+  const d=data.destinations.find(item=>item.key===key);if(!d)return;selectedKey=key;
+  const uncertainEligibility=eligibilityUnknown(d),eligibilityNote=uncertainEligibility?'<p class="eligibility-note">The public MAX feed marks this train OUI, but SNCF’s published MAX Jeune €0 terms do not list Belgium. Confirm eligibility with SNCF before relying on this route.</p>':'';
+  document.querySelectorAll('[data-key]').forEach(el=>el.classList.toggle('selected',el.dataset.key===key));
+  const stay=stayMinutes(d),moreLabel=data.mode==='oneway'?'Show more departure times':data.mode==='daytrip'?'Show more day-trip options':'Show more outbound and return options';
+  $('discoveryDetails').innerHTML=`<article class="discovery-card"><div class="discovery-head"><h3>${esc(d.name)} <span>· ${changesLabel(d.changes)}${uncertainEligibility?' · MAX eligibility unconfirmed':''}</span></h3>${stay===null?'':`<div class="stay-summary"><strong>${spanText(stay)}</strong> between arrival and return</div>`}</div>${eligibilityNote}<div class="time-option-directions">${renderExploreJourney(d.outbound,'Outbound')}${d.returning?renderExploreJourney(d.returning,'Return'):''}</div><div class="discovery-actions"><button type="button" class="btn btn-primary" data-plan-trip>Plan this trip →</button><button type="button" class="btn btn-secondary more-times" data-more-times="${esc(d.key)}">${moreLabel}</button></div><p class="caveat-line">MAX seats come from a daily snapshot, so a train shown here may no longer be bookable.</p><div class="more-times-results" data-times-for="${esc(d.key)}"></div></article>`;
+  const box=$('destinationList'),row=box.querySelector('.selected');
+  if(row&&!fromList&&(row.offsetTop<box.scrollTop||row.offsetTop+row.offsetHeight>box.scrollTop+box.clientHeight))box.scrollTop=row.offsetTop-(box.clientHeight-row.offsetHeight)/2;
+  if(fromList&&window.matchMedia('(max-width:1000px)').matches)$('discoveryDetails').scrollIntoView({behavior:'smooth',block:'start'});
+  $('discoveryDetails').onclick=async e=>{
+   if(e.target.closest('[data-plan-trip]')){$('origin').value=data.origin;$('destination').value=d.name;$('outbound').value=data.date;$('return').value=data.mode==='return'?data.returnDate:data.date;syncPlanDateLimits();switchView('planView');return;}
+   const button=e.target.closest('[data-more-times]');if(!button)return;button.disabled=true;button.textContent='Checking more times…';const timesBox=[...$('discoveryDetails').querySelectorAll('[data-times-for]')].find(item=>item.dataset.timesFor===d.key);
+   try{const values={origin:data.origin,destination:d.name,date:data.date,mode:data.mode,changes:data.changes.join(','),...connectionQuery(),...routeSearchQuery(),minimumStayMinutes:$('minimumStayMinutes').value};if(data.mode==='return')values.returnDate=data.returnDate;if(data.afterNow)values.afterNow='true';const response=await fetch('/api/discovery/times?'+new URLSearchParams(values)),result=await response.json();if(!response.ok)throw Error(result.error||'Could not load additional times.');const current=new Date(d.outbound.departure).getTime(),options=result.options.filter(option=>new Date(option.outbound.departure).getTime()!==current),coverage=searchCoverageNote(result.routeSearchDiagnostics?.search);timesBox.innerHTML=options.length?`<h4>${data.mode==='daytrip'?'More day-trip combinations':`Other times for ${esc(d.name)}`}</h4><p class="times-note">Showing up to 12 different outbound departures${data.mode==='oneway'?'':' with a feasible MAX return'}${result.departureCutoff?` after ${new Date(result.departureCutoff).toLocaleTimeString(undefined,hour23)}`:''}. ${coverage} ${freshnessText(result)}</p>${options.map(renderExploreOption).join('')}`:coverage||'No other matching MAX departure times were found for this date and change selection.';button.remove();}catch(error){timesBox.textContent=error.message;button.disabled=false;button.textContent=moreLabel;}
+  };
+ };
+ $('destinationMap').onclick=e=>{const marker=e.target.closest('[data-key]');if(marker)select(marker.dataset.key,false)};$('destinationList').onclick=e=>{const row=e.target.closest('[data-key]');if(row)select(row.dataset.key,true)};
+ if(data.destinations.length)select(sortedDestinations()[0].key,true);else $('discoveryDetails').innerHTML='';
+}
+let activeExploreController=null,exploreRequestGeneration=0;function selectedChanges(){const from=$('hideDirect').checked&&changeLimit>0?1:0;return Array.from({length:changeLimit-from+1},(_,i)=>from+i);}
+function setChangeLimit(n){changeLimit=n;document.querySelectorAll('#changeLimit button').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.limit)===n)));$('hideDirect').disabled=n===0;if(n===0)$('hideDirect').checked=false;}
+$('exploreForm').addEventListener('submit',async e=>{
+ e.preventDefault();activeExploreController?.abort();const controller=new AbortController(),generation=++exploreRequestGeneration;activeExploreController=controller;const btn=$('exploreSubmit'),mode=$('exploreMode').value,changes=selectedChanges().map(String);
+ btn.disabled=true;btn.textContent='Exploring…';$('exploreStatus').textContent='Checking MAX routes and station locations…';
+ try{syncExploreNowFilter();const values={origin:$('exploreOrigin').value,date:$('exploreDate').value,mode,changes:changes.join(','),...connectionQuery(),...routeSearchQuery(),minimumStayMinutes:$('minimumStayMinutes').value};if(mode==='return')values.returnDate=$('exploreReturnDate').value;if(values.date===iso(new Date())&&$('exploreAfterNow').checked)values.afterNow='true';const p=new URLSearchParams(values),r=await fetch('/api/discovery?'+p,{signal:controller.signal}),d=await r.json();if(generation!==exploreRequestGeneration)return;if(!r.ok)throw Error(d.error||'Discovery search failed');
+  drawMap(d);exploreHasSearched=true;const n=d.destinations.length,outboundLabel=longDate(d.date),modeLabel=mode==='daytrip'?'with a same-day MAX return':mode==='return'?`with a MAX return on ${longDate(d.returnDate)}`:'one way';
+  $('mapHeading').textContent=`${plural(n,'destination','destinations')} ${modeLabel}`;
+  const coverage=searchCoverageNote(d.routeSearchDiagnostics?.search),peakRss=d.routeSearchDiagnostics?.worker?.processRssPeakMiB,memoryNote=Number.isFinite(peakRss)?` · sampled peak memory ${peakRss.toLocaleString()} MiB`:'';$('exploreStatus').className=coverage?'view-status warning':'view-status';$('exploreStatus').innerHTML=`<strong>${plural(n,'destination','destinations')}</strong> from ${esc(d.origin)} · ${esc(outboundLabel)}${mode==='return'?` · returning ${esc(longDate(d.returnDate))}`:''}${d.departureCutoff?` · departures before ${new Date(d.departureCutoff).toLocaleTimeString(undefined,hour23)} excluded`:''}${coverage?` · ${esc(coverage)}`:''}${memoryNote} · MAX snapshot ${esc(snapshotLabel(d))}.`;setProvenance(d);
+ }catch(err){if(err.name!=='AbortError'&&generation===exploreRequestGeneration){$('exploreStatus').textContent=err.message;$('destinationMap').className='map-empty';$('destinationMap').textContent='Could not load the destination map.';$('destinationList').innerHTML='';$('discoveryDetails').innerHTML=''}}finally{if(generation===exploreRequestGeneration){activeExploreController=null;btn.disabled=false;btn.textContent='Explore'}}
+});let exploreHasSearched=false,changeRefreshTimer;
+function refreshExploreSoon(){if(!exploreHasSearched)return;clearTimeout(changeRefreshTimer);changeRefreshTimer=setTimeout(()=>$('exploreForm').requestSubmit(),200);}
+$('changeLimit').addEventListener('click',e=>{const b=e.target.closest('[data-limit]');if(!b)return;setChangeLimit(Number(b.dataset.limit));refreshExploreSoon();});
+$('hideDirect').addEventListener('change',refreshExploreSoon);
+function monthName(value){if(!value)return'';return new Date(`${value}-01T12:00:00Z`).toLocaleDateString(undefined,{timeZone:'Europe/Paris',month:'long',year:'numeric'});}function renderCalendar(data){
+ const [year,month]=data.month.split('-').map(Number),offset=(new Date(Date.UTC(year,month-1,1)).getUTCDay()+6)%7,days=data.days;
+ $('calendarHeading').textContent=`${monthName(data.month)} · MAX trains available`;
+ const eligibilityCaveat=/bruxelles|brussels/i.test(`${data.origin} ${data.destination}`)?' Brussels MAX €0 eligibility is unconfirmed; SNCF’s published terms do not list Belgium.':'';
+ $('calendarStatus').textContent=(data.window.start?`Direct MAX trains for ${data.window.start}–${data.window.end}, MAX snapshot ${snapshotLabel(data)}. Click a day to plan it.`:'No dates in this month fall within the current 30-day availability window.')+eligibilityCaveat;setProvenance(data);
+ const headers=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>`<div class="calendar-weekday">${x}</div>`).join(''),blanks=Array.from({length:offset},()=>'<div></div>').join('');
+ const cells=days.map(day=>{
+  const count=day.availableTrains,level=count===0?0:count<=2?1:count<=5?2:3,blocked=!day.inWindow||count===0,past=day.date<todayIso;
+  const state=!day.inWindow?'outside-window':count===0?'no-max':`level-${level}`;
+  const title=!day.inWindow?(past?'Past date':'Not yet published (outside the rolling 30-day window)'):count===0?'No MAX-available direct trains':'Open this date in Plan a trip';
+  const label=`${longDate(day.date)}: ${day.inWindow&&count?`${plural(count,'direct MAX train','direct MAX trains')}. `:''}${title}`;
+  const inner=day.inWindow?`<span class="cd-count"><b>${count}</b><i>${count===1?'train':'trains'}</i></span>`:`<span class="cd-count"><i>${past?'Past':'Later'}</i></span>`;
+  return `<button type="button" class="calendar-day ${state}" data-date="${day.date}" title="${title}" aria-label="${esc(label)}" ${blocked?'disabled':''}><span class="cd-day">${Number(day.date.slice(-2))}</span>${inner}</button>`}).join('');
+ $('availabilityCalendar').innerHTML=headers+blanks+cells;
+ $('availabilityCalendar').onclick=e=>{const cell=e.target.closest('[data-date]');if(!cell||cell.disabled)return;$('origin').value=$('calendarOrigin').value;$('destination').value=$('calendarDestination').value;$('outbound').value=cell.dataset.date;$('return').value=cell.dataset.date;syncPlanDateLimits();switchView('planView');};
+}
+async function loadCalendar(){const origin=$('calendarOrigin').value,destination=$('calendarDestination').value,month=$('calendarMonth').value;if(!origin||!destination||!month)return;$('calendarStatus').textContent='Loading daily MAX train counts…';$('calendarSubmit').disabled=true;try{const p=new URLSearchParams({origin,destination,month}),r=await fetch('/api/availability-calendar?'+p),d=await r.json();if(!r.ok)throw Error(d.error||'Could not load the date comparison.');renderCalendar(d);}catch(err){$('calendarStatus').textContent=err.message;$('availabilityCalendar').innerHTML=''}finally{$('calendarSubmit').disabled=false;}}
+$('calendarForm').addEventListener('submit',e=>{e.preventDefault();loadCalendar()});$('calendarMonth').addEventListener('change',()=>{if($('calendarOrigin').value&&$('calendarDestination').value)loadCalendar()});for(const [id,delta] of [['monthBack',-1],['monthForward',1]])$(id).addEventListener('click',()=>{const [y,m]=($('calendarMonth').value||monthValue(now)).split('-').map(Number);const d=new Date(Date.UTC(y,m-1+delta,1));$('calendarMonth').value=monthValue(d);if($('calendarOrigin').value&&$('calendarDestination').value)loadCalendar();});
+/* ===== Redesign wiring (dialogs, segmented controls, steppers, tabs) ===== */
+function syncEchoes(){for(const [input,echo] of [['outbound','outboundEcho'],['return','returnEcho'],['exploreDate','exploreDateEcho'],['exploreReturnDate','exploreReturnEcho']]){const value=$(input).value;$(echo).textContent=value&&!$(input).closest('.hidden')?longDate(value):'';}}
+for(const id of ['outbound','return','exploreDate','exploreReturnDate','exploreMode'])$(id).addEventListener('change',syncEchoes);
+function syncPlanOptions(){$('closestOption').classList.toggle('hidden',$('includeTer').checked);}
+$('includeTer').addEventListener('change',syncPlanOptions);
+function syncDirTabs(which){$('dirOut').setAttribute('aria-selected',String(which==='out'));$('dirBack').setAttribute('aria-selected',String(which==='back'));$('colOut').classList.toggle('is-inactive',which!=='out');$('colBack').classList.toggle('is-inactive',which!=='back');}
+$('dirTabs').addEventListener('click',e=>{const b=e.target.closest('[data-dir]');if(b)syncDirTabs(b.dataset.dir);});
+function syncSortChips(){const value=$('destinationSort').value||'changes';document.querySelectorAll('#sortChips [data-sort]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.sort===value)));}
+$('sortChips').addEventListener('click',e=>{const b=e.target.closest('[data-sort]');if(!b||b.disabled)return;$('destinationSort').value=b.dataset.sort;$('destinationSort').dispatchEvent(new Event('change'));});
+$('destinationSort').addEventListener('change',syncSortChips);
+function setTripMode(mode){$('exploreMode').value=mode;document.querySelectorAll('#tripTypeSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));$('exploreMode').dispatchEvent(new Event('change'));}
+$('tripTypeSeg').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(b)setTripMode(b.dataset.mode);});
+function syncStayLabel(){const m=Number($('minimumStayMinutes').value)||0;$('stayOutput').textContent=m<60?`${m} min`:m%60?`${Math.floor(m/60)} h ${m%60}`:`${m/60} h`;}
+for(const [id,delta] of [['stayDown',-30],['stayUp',30]])$(id).addEventListener('click',()=>{const input=$('minimumStayMinutes');input.value=String(Math.min(1440,Math.max(0,(Number(input.value)||0)+delta)));syncStayLabel();input.dispatchEvent(new Event('change'));});
+for(const [button,from,to] of [['swapStations','origin','destination'],['swapCalendar','calendarOrigin','calendarDestination']])$(button).addEventListener('click',()=>{const a=$(from).value;$(from).value=$(to).value;$(to).value=a;});
+for(const [button,dialog] of [['rulesButton','rulesDialog'],['caveatsButton','caveatsDialog']]){$(button).addEventListener('click',()=>$(dialog).showModal());$(dialog).addEventListener('click',e=>{if(e.target===$(dialog))$(dialog).close();});}
+document.addEventListener('click',e=>{
+ const close=e.target.closest('[data-close-dialog]');if(close){close.closest('dialog').close();return;}
+ if(e.target.closest('[data-goto-dates]')){switchView('datesView');if($('calendarOrigin').value&&$('calendarDestination').value)loadCalendar();return;}
+ if(e.target.closest('[data-raise-limit]')){setChangeLimit(Math.min(5,changeLimit+1));$('exploreForm').requestSubmit();return;}
+ const quick=e.target.closest('[data-quick]');if(quick){$('exploreOrigin').value=quick.dataset.quick;$('exploreOrigin').focus();}
+});
+document.querySelector('.mode-tabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;const tabs=[...document.querySelectorAll('.mode-tab')],i=tabs.indexOf(document.activeElement);if(i<0)return;e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[next].focus();switchView(tabs[next].dataset.view);});
+setChangeLimit(2);syncStayLabel();syncPlanOptions();syncEchoes();
+</script>
+</body>
+</html>

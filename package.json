@@ -1,0 +1,28 @@
+{
+  "name": "max-jeune-journey-planner",
+  "version": "0.1.0",
+  "productName": "MAX Jeune Planner",
+  "description": "Local MAX Jeune journey planner",
+  "main": "desktop/main.js",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "sample": "SAMPLE_DATA=1 node server.js",
+    "desktop": "electron .",
+    "desktop:package": "electron-forge package",
+    "desktop:make": "electron-forge make",
+    "test": "node --test",
+    "audit:stations": "node audit-station-codes.js",
+    "audit:routes": "node audit-route-search.js",
+    "audit:search": "node audit-search-integration.js"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.8.3",
+    "@electron-forge/maker-zip": "^7.8.3",
+    "electron": "^42.11.11"
+  }
+}
